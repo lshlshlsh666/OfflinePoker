@@ -1,0 +1,111 @@
+.handcards {
+    position: absolute;
+    width: 13%;
+    height: 15%;
+    bottom: 10%;
+    left: 15%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5%;
+}
+
+
+.ready-button {
+    width: 10%;
+    height: 6%;
+    position: absolute;
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 1vw 2vw; /* 增加按钮的内边距，使其更大 */
+    font-size: 1.5vw; /* 增大字体 */
+    font-weight: bold; /* 字体加粗 */
+    background: linear-gradient(135deg, #FF6347, #FF4500); /* 使用渐变背景 */
+    color: #fff; /* 白色字体 */
+    border: 0.3vw solid #FFD700; /* 添加金色边框 */
+    border-radius: 5%; /* 更大的圆角 */
+    cursor: pointer; /* 鼠标指针变成手形 */
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
+    transition: all 0.3s ease; /* 平滑的动画效果 */
+}
+
+.ready-button:hover {
+    background: linear-gradient(135deg, #FF4500, #FF6347); /* 反向渐变背景 */
+    transform: translate(-50%, -50%) scale(1.1); /* 鼠标悬停时放大 */
+    box-shadow: 0 1.5vw 3vw rgba(0, 0, 0, 0.4); /* 鼠标悬停时增加阴影 */
+}
+
+.ready-button:active {
+    transform: translate(-50%, -50%) scale(0.95); /* 点击时缩小按钮 */
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.2); /* 点击时减少阴影 */
+}
+
+.ready-button:disabled {
+    background: #32CD32; /* 准备就绪的绿色背景 */
+    cursor: not-allowed; /* 禁用状态下鼠标指针变化 */
+    box-shadow: none; /* 移除阴影 */
+    opacity: 0.8; /* 增加透明度效果 */
+}
+
+
+/* Container for buttons */
+.op-button-container {
+    position: absolute;
+    right: 5%;
+    bottom: 5%;
+    display: flex;
+    gap: 2%;
+    padding: 1vw;
+    background: rgba(0, 0, 0, 0.7); /* Slightly darker for better contrast */
+    border-radius: 1vw;
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.4);
+}
+
+/* General button style */
+.op-button {
+    width: 30%;
+    height: 10%;
+    padding: 0.5vw 0.5vw;
+    font-size: 1.5vw;
+    font-weight: bold;
+    text-align: center;
+    background: linear-gradient(135deg, #FF6347, #FF4500);
+    color: #fff;
+    border: 0.3vw solid #FFD700;
+    border-radius: 0.3vw;
+    cursor: pointer;
+    box-shadow: 0 0.8vw 1.5vw rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
+.op-button:hover {
+    background: linear-gradient(135deg, #FF4500, #FF6347);
+    transform: translateY(-0.5vw);
+    box-shadow: 0 1vw 2vw rgba(0, 0, 0, 0.5);
+}
+
+.op-button:active {
+    transform: translateY(0);
+    box-shadow: 0 0.4vw 0.8vw rgba(0, 0, 0, 0.4);
+}
+
+/* Input box style for 'Bet' */
+.bet-input {
+    width: 40%;
+    height: 10%;
+    padding: 0.5vw;
+    font-size: 1.2vw;
+    color: #333;
+    border: 0.3vw solid #FFD700;
+    border-radius: 0.5vw;
+    background: #fff;
+    box-shadow: 0 0.4vw 0.8vw rgba(0, 0, 0, 0.2);
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    /* transform: translateY(-0.5vw); */
+}
+
+.bet-input:focus {
+    outline: none;
+    border-color: #FF4500;
+    box-shadow: 0 0.8vw 1.5vw rgba(255, 69, 0, 0.5);
+}

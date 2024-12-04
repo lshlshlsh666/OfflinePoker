@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>德州扑克桌面</title>
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/player_container.css">
+    <link rel="stylesheet" href="css/playing-cards.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <script>
+        username = '';
+        const mysid = localStorage.getItem('mysid');
+        let socket;
+        if (mysid) {
+            console.log('mysid:', mysid);
+            socket = io('http://172.20.10.13:8080', {
+                query: { 
+                    "mysid": mysid
+                }
+            });
+        } else {
+            socket = io('http://172.20.10.13:8080');
+        }
+
+        socket.on('new_sid', (data) => {
+            const newSid = data.mysid;
+            console.log(`Received new SID: ${newSid}`);
+            localStorage.setItem('mysid', newSid); // 保存新的 SID
+            // flash
+            socket.disconnect();
+            location.reload();
+            socket = io('http://172.20.10.13:8080', {
+                query: { 
+                    "mysid": mysid
+                }
+            });
+        });
+
+        socket.on('session_restored', (data) => {
+            const player = data.player;
+            if (player) {
+                username = player.username;
+                console.log(`恢复会话成功，用户名：${username}`);
+                socket.emit("join", { username: username, chips: player.chips, alone: true });
+            } else {
+                document.dispatchEvent(new CustomEvent('NewUserLogin'));
+            }
+        });
+    </script>
+
+    <script src = "js/error.js"></script>
+    <script src = "js/login.js"></script>
+    <script src = "js/table.js"></script>
+    <script src = "js/ui.js"></script>
+    <script src = "js/players_info.js"></script>
+</body>
+</html>
