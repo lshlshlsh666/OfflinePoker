@@ -23,6 +23,12 @@ def changed_to_css_name(card: int):
     
 
 class Deck:
+    # singleton
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(Deck, cls).__new__(cls)
+        return cls.instance
+
     def __init__(self):
         self.reset()
 
@@ -72,7 +78,7 @@ class HandCard:
     def dealcards(self):
         for _ in range(2):
             self.cards.append(self.deck.draw())
-        return self.cards;
+        return self.cards
 
     def get_best_hand(self, community: CommunityCard):
         matched_cards = self.cards + community.cards

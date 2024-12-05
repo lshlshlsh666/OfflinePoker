@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/player_container.css">
     <link rel="stylesheet" href="css/playing-cards.css">
     <link rel="stylesheet" href="css/ui.css">
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="js/socket.js"></script>
 </head>
 <body>
     <script>
@@ -18,13 +18,13 @@
         let socket;
         if (mysid) {
             console.log('mysid:', mysid);
-            socket = io('http://172.20.10.13:8080', {
+            socket = io('http://192.168.1.154:8080', {
                 query: { 
                     "mysid": mysid
                 }
             });
         } else {
-            socket = io('http://172.20.10.13:8080');
+            socket = io('http://192.168.1.154:8080');
         }
 
         socket.on('new_sid', (data) => {
@@ -34,7 +34,7 @@
             // flash
             socket.disconnect();
             location.reload();
-            socket = io('http://172.20.10.13:8080', {
+            socket = io('http://192.168.1.154:8080', {
                 query: { 
                     "mysid": mysid
                 }
@@ -53,6 +53,7 @@
         });
     </script>
 
+    <script src="js/utils.js"></script>
     <script src = "js/error.js"></script>
     <script src = "js/login.js"></script>
     <script src = "js/table.js"></script>

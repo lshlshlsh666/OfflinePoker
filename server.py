@@ -1,10 +1,6 @@
 from flask import Flask, send_from_directory, request
-from flask_socketio import SocketIO, emit, join_room
+from flask_socketio import SocketIO, emit
 import uuid
-import random
-import itertools
-from collections import Counter
-from itertools import combinations
 
 from py.game import Game
 
@@ -12,7 +8,7 @@ app = Flask(__name__, static_folder='.')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 initial_sid_map = {}
-sessions = {1: None}
+sessions = {'test': None}
 
 # Global variables
 GAME = Game()
@@ -20,15 +16,12 @@ IS_START = False
 
 
 def generate_sid():
-    """生成唯一的 SID"""
     return str(uuid.uuid4())
 
 @socketio.on('connect')
 def handle_connect():
-    """处理 WebSocket 连接"""
-    mysid = request.args.get("mysid")  # 从请求中获取 SID
+    mysid = request.args.get("mysid")
     if mysid and mysid in sessions:
-        # 恢复会话
         print(f"Restoring session for SID: {mysid}")
         sessions[mysid]['socket_id'] = request.sid
         if 'player' in sessions[mysid]['data']:
@@ -36,10 +29,9 @@ def handle_connect():
         else:
             socketio.emit('session_restored', {'player': None}, room=request.sid)
     else:
-        # 创建新会话
         mysid = generate_sid()
         print(f"Creating new session with SID: {mysid}")
-        sessions[mysid] = {'socket_id': request.sid, 'data': {}}  # 存储会话信息
+        sessions[mysid] = {'socket_id': request.sid, 'data': {}}
         socketio.emit('new_sid', {'mysid': mysid}, room=request.sid)
         initial_sid_map[request.sid] = mysid
 
@@ -71,9 +63,17 @@ def on_join(data):
         
     players = GAME.players
     if alone:
-        emit('UpdatePlayerInfo', {
-            username: players[username].to_dict() for username in players
-        }, to=request.sid)
+        try:
+            emit('UpdateRoundInfo', {
+                'current_max_chip': GAME.current_max_chip,
+                'big_blind_username': GAME.player_usernames[GAME.sb_index_this_round + 1],
+                'big_blind_required': GAME.config.BIG_BLIND
+            }, to=request.sid)
+        except:
+            pass
+        message = {username: players[username].to_dict() for username in players}
+        message['is_playing'] = IS_START
+        emit('UpdatePlayerInfo', message, to=request.sid)
         emit('UpdateBetChips', {
             username: current_bid_chip for username, current_bid_chip in GAME.current_chips.items() if current_bid_chip > 0
         }, to=request.sid)
@@ -81,6 +81,11 @@ def on_join(data):
             'is_ready': players[username].status == 'ready',
             'is_playing': IS_START,
             'handcards': players[username].handcards.cards
+        }, to=request.sid)
+        emit('UpdateCenterZone', {
+            'community_cards': GAME.community.cards,
+            'this_round_total_chips': sum(GAME.current_chips.values()),
+            'prev_total_chips': GAME.prev_total_chips
         }, to=request.sid)
     else:
         emit('UpdatePlayerInfo', {
@@ -100,24 +105,31 @@ def on_ready(data):
     if is_start:
         global IS_START
         IS_START = True
+        small_blind_username, big_blind_username, next_player = GAME.start_new_game()
         emit('GameStarted', broadcast=True)
         dealcards()
-        small_blind_username, big_blind_username, sb_chips, bb_chips = GAME.start_game()
+        emit('UpdateRoundInfo', {
+            'current_max_chip': GAME.current_max_chip,
+            'big_blind_username': big_blind_username,
+            'big_blind_required': GAME.config.BIG_BLIND
+        }, broadcast=True)
         emit('UpdatePlayerInfo', {
             small_blind_username: GAME.players[small_blind_username].to_dict(),
-            big_blind_username: GAME.players[big_blind_username].to_dict()
+            big_blind_username: GAME.players[big_blind_username].to_dict(),
+            next_player: GAME.players[next_player].to_dict()
         }, broadcast=True)
         emit('UpdateBetChips', {
-            small_blind_username: sb_chips,
-            big_blind_username: bb_chips
+            small_blind_username: GAME.current_chips[small_blind_username],
+            big_blind_username: GAME.current_chips[big_blind_username],
         }, broadcast=True)
-
-def dealcards():
-    for player in GAME.players.values():
-        cards = player.get_handcards()
-        emit('DealtCards', {
-            'cards': cards
-        }, to=sessions[player.session_id]['socket_id'])
+        emit('UpdateCenterZone', {
+            'community_cards': GAME.community.cards,
+            'this_round_total_chips': sum(GAME.current_chips.values()),
+            'prev_total_chips': GAME.prev_total_chips
+        }, broadcast=True)
+        emit('RemovePnl', {
+            'username': GAME.player_usernames
+        }, broadcast=True)
         
 @socketio.on('GetPlayerUsernames')
 def on_get_player_usernames():
@@ -125,38 +137,108 @@ def on_get_player_usernames():
         'player_usernames': list(GAME.players.keys())
     }, to=request.sid)
 
-# @socketio.on('call')
-# def on_call(data):
-#     name = data['username']
-#     flag = CHIP_CENTER.call(name)
-#     if flag:
-#         emit("ChipsChanged", {
-#             'username': name,
-#             'chips': Players[name].chips,
-#         }, broadcast=True)
-#     else:
-#         emit("InsufficientChips", to=request.sid)
+def new_round():
+    community_cards, prev_total_chips = GAME.new_round()
+    emit("UpdateCenterZone", {
+        'community_cards': community_cards,
+        'this_round_total_chips': 0,
+        'prev_total_chips': prev_total_chips
+    }, broadcast=True)
+    emit('UpdateRoundInfo', {
+        'current_max_chip': GAME.current_max_chip,
+    }, broadcast=True)
+    emit('UpdatePlayerInfo', {
+        username: player.to_dict() for username, player in GAME.players.items()
+    }, broadcast=True)
+    emit('UpdateBetChips', {
+        username: 0 for username in GAME.players
+    }, broadcast=True)
+
+@socketio.on('call')
+def on_call(data):
+    username = data['username']
+    now_player, next_player = GAME.call(username)
+    if next_player:
+        emit('UpdatePlayerInfo', {
+            now_player: GAME.players[now_player].to_dict(),
+            next_player: GAME.players[next_player].to_dict(),
+        }, broadcast=True)
+        emit('UpdateBetChips', {
+            now_player: GAME.current_chips[now_player],
+            next_player: GAME.current_chips[next_player]
+        }, broadcast=True)
+    else:
+        if GAME.status == 'End':
+            emit("RoundEnd", GAME.get_result(), broadcast=True)
+            emit('UpdatePlayerInfo', {username: player.to_dict() for username, player in GAME.players.items()}, broadcast=True)
+            emit('UpdateBetChips', {username: 0 for username in GAME.players}, broadcast=True)
+            emit("UpdateCenterZone", {'community_cards': GAME.community.cards, 'this_round_total_chips': 0, 'prev_total_chips': GAME.prev_total_chips}, broadcast=True)
+        else:
+            new_round()
         
-# @socketio.on('bet')
-# def on_bet(data):
-#     name, chips = data['username'], data['chips']
-#     flag = CHIP_CENTER.bet(name, chips)
-    
-#     if flag:
-#         emit("ChipsChanged", {
-#             'username': name,
-#             'chips': Players[name].chips,
-#         }, broadcast=True)
-#     else:
-#         emit("InsufficientChips", to=request.sid)
+@socketio.on('bet')
+def on_bet(data):
+    username, chips = data['username'], data['chips']
 
-# @socketio.on('fold')
-# def on_fold(data):
-#     name = data['username']
-#     emit("PlayerFolded", {
-#         'username': name
-#     }, broadcast=True)
+    try:
+        now_player, next_player = GAME.bet(username, int(chips))
+    except ValueError as e:
+        min_bet, max_bet = e.args[1:]
+        emit('WrongbetChipsError',
+                {'min_bet': min_bet, 'max_bet': max_bet},
+              to=request.sid)
+        return
+    # bet wouldn't cause the end of the round
+    emit('UpdateRoundInfo', {
+        'current_max_chip': GAME.current_max_chip,
+    }, broadcast=True)
+    emit('UpdatePlayerInfo', {
+        now_player: GAME.players[now_player].to_dict(),
+        next_player: GAME.players[next_player].to_dict(),
+    }, broadcast=True)
+    emit('UpdateBetChips', {
+        now_player: GAME.current_chips[now_player],
+        next_player: GAME.current_chips[next_player]
+    }, broadcast=True)
 
+
+@socketio.on('fold')
+def on_fold(data):
+    username = data['username']
+    now_player, next_player = GAME.fold(username)
+
+    if next_player:
+        emit('UpdatePlayerInfo', {
+            now_player: GAME.players[now_player].to_dict(),
+            next_player: GAME.players[next_player].to_dict(),
+        }, broadcast=True)
+    else:
+        if GAME.status == 'End':
+            emit("RoundEnd", GAME.get_result(), broadcast=True)
+            emit('UpdatePlayerInfo', {username: player.to_dict() for username, player in GAME.players.items()}, broadcast=True)
+            emit('UpdateBetChips', {username: 0 for username in GAME.players}, broadcast=True)
+            emit("UpdateCenterZone", {'community_cards': GAME.community.cards, 'this_round_total_chips': 0, 'prev_total_chips': GAME.prev_total_chips}, broadcast=True)
+        else:
+            new_round()
+
+def dealcards():
+    for player in GAME.players.values():
+        cards = player.get_handcards()
+        emit('DealtCards', {
+            'cards': cards
+        }, to=sessions[player.session_id]['socket_id'])
+
+@socketio.on('initializeRound')
+def on_initialize_round():
+    for player in GAME.players.values():
+        player.reset()
+        global IS_START
+        IS_START = False
+    GAME.status = 'PreFlop'
+    emit('UpdatePlayerInfo', {
+        username: player.to_dict() for username, player in GAME.players.items()
+    }, broadcast=True)
+    emit('')
 
 if __name__ == '__main__':
-    socketio.run(app, host='172.20.10.13', port=8080)
+    socketio.run(app, host='192.168.1.154', port=8080)

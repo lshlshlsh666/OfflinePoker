@@ -10,6 +10,7 @@ class Player:
     handcards: HandCard
     status: Literal['unready', 'ready', 'fold', 'allin']
     my_turn: bool
+    role: Literal['small_blind', 'big_blind', 'dealer', 'player']
     session_id: int
     
     def to_dict(self):
@@ -18,7 +19,8 @@ class Player:
             'chips': self.chips,
             'handcards': self.handcards.cards,
             'status': self.status,
-            'my_turn': self.my_turn
+            'my_turn': self.my_turn,
+            'role': self.role
         }
         
     def get_handcards(self):
@@ -39,3 +41,9 @@ class Player:
         self.chips = 0
         self.status = 'allin'
         return all_in_chips
+    
+    def reset(self):
+        self.handcards.reset()
+        self.status = 'unready'
+        self.my_turn = False
+        self.role = 'player'

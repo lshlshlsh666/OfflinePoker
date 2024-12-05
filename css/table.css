@@ -20,25 +20,35 @@ body {
     border: 5px solid #f1c40f;
 }
 
-.public-cards {
-    width: 50%;
-    height: 20%;
+.center-container {
     position: absolute;
+    width: 50%;
+    height: 30%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     display: flex;
-    gap: 30px;
+    flex-direction: column;
 }
 
-.card-slot {
-    width: 20%;
-    height: 100%;
-    border: 1px dashed #f39c12;
-    border-radius: 5px;
+.public-cards {
+    position: relative;
+    width: 100%;
+    height: 70%;
+    /* transform: translate(-50%, -50%); */
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #f39c12;
-    font-weight: bold;
+    gap: 15px;
+    justify-content: center; /* 水平居中 */
+}
+
+/* total-chips 样式 */
+.total-chips {
+    position: relative;      /* 相对定位 */
+    display: flex;
+    margin-top: 10px;         /* 与上方内容的间距 */
+    font-size: 16px;          /* 字体大小 */
+    font-weight: bold;        /* 字体加粗 */
+    justify-content: center; /* 水平居中 */
+    text-align: center;       /* 文本居中对齐 */
+    color: #f9f9f9;              /* 文本颜色 */
 }

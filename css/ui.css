@@ -1,6 +1,6 @@
 .handcards {
     position: absolute;
-    width: 13%;
+    width: 10%;
     height: 15%;
     bottom: 10%;
     left: 15%;
@@ -51,22 +51,25 @@
 /* Container for buttons */
 .op-button-container {
     position: absolute;
+    width: 25%;
+    height: 3%;
     right: 5%;
     bottom: 5%;
     display: flex;
-    gap: 2%;
-    padding: 1vw;
+    gap: 1%;
+    padding: 1.5%;
     background: rgba(0, 0, 0, 0.7); /* Slightly darker for better contrast */
     border-radius: 1vw;
     box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.4);
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
 }
 
 /* General button style */
 .op-button {
-    width: 30%;
-    height: 10%;
-    padding: 0.5vw 0.5vw;
-    font-size: 1.5vw;
+    width: 20%;
+    padding: 2% 2%;
+    font-size: 1%;
     font-weight: bold;
     text-align: center;
     background: linear-gradient(135deg, #FF6347, #FF4500);
@@ -76,6 +79,8 @@
     cursor: pointer;
     box-shadow: 0 0.8vw 1.5vw rgba(0, 0, 0, 0.4);
     transition: all 0.3s ease;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
 }
 
 .op-button:hover {
@@ -89,18 +94,28 @@
     box-shadow: 0 0.4vw 0.8vw rgba(0, 0, 0, 0.4);
 }
 
+.disabled .op-button{
+    background: #ccc;
+    color: #666;
+    border-color: #aaa;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
 /* Input box style for 'Bet' */
 .bet-input {
     width: 40%;
-    height: 10%;
     padding: 0.5vw;
-    font-size: 1.2vw;
+    font-size: 1%;
     color: #333;
     border: 0.3vw solid #FFD700;
     border-radius: 0.5vw;
     background: #fff;
     box-shadow: 0 0.4vw 0.8vw rgba(0, 0, 0, 0.2);
     transition: border 0.3s ease, box-shadow 0.3s ease;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
     /* transform: translateY(-0.5vw); */
 }
 

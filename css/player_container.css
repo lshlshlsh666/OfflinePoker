@@ -50,6 +50,7 @@
 
 /* 长方形样式 */
 .rectangle {
+  position: absolute; /* 相对定位 */
   width: 100%; /* 长方形宽度与容器一致 */
   height: 25%; /* 长方形高度占容器的35%，确保覆盖更多的圆形底部 */
   background: linear-gradient(to right, #b8860b, #4a4a4a); /* 黑金色渐变背景颜色 */
@@ -58,7 +59,6 @@
   align-items: center; /* 垂直居中 */
   justify-content: center; /* 水平居中 */
   font-size: 1em; /* 字体相对调整，更加突出 */
-  position: absolute; /* 绝对定位 */
   bottom: -5%; /* 覆盖住圆形底部，往下延伸一些 */
   left: 0; /* 左对齐 */
   border-bottom-left-radius: 10%; /* 长方形左下角圆角 */
@@ -66,6 +66,18 @@
   z-index: 1; /* 确保长方形在圆形的前面 */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* 添加阴影使长方形更具立体感 */
   transition: background 0.3s ease, color 0.3s ease; /* 过渡效果 */
+}
+
+.role_letter {
+  position: absolute;
+  font-size: 3%;          /* 字母大小 */
+  font-weight: bold;        /* 字母加粗 */
+  color: rgb(225, 225, 231);   /* 字母颜色 */
+  left: 5%;
+  bottom: 7%;
+  transform: translate(0, 50%);
+  opacity: 0.5;
+  z-index: 1;
 }
 
 /* 未准备状态 */
@@ -127,5 +139,27 @@
   border: 2px solid #e67e22; /* 外圈边框 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
   transform: translate(-50%, -50%);
+  display: flex;
+}
+
+.reveal_card_container {
+  position: absolute;
+  width: 10%;
+  height: 15%;
+  transform: translate(-50%, -50%);
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  gap: 5%;
+  display: flex;
+}
+
+.pnl_text {
+  position: absolute;
+  width: 10%;
+  height: 5%;
+  transform: translate(-50%, -50%);
+  font-size: 25px;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
   display: flex;
 }
