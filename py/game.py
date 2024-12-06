@@ -247,13 +247,18 @@ class Game:
             else:
                 player.status = 'unready'
         self.result_dict['reveal_waived'] = True if len(self.result_dict['best_hand']) == 1 else False
-        self.result_dict['winner'] = max(self.result_dict['best_hand'], key=self.result_dict['best_hand'].get)
-        self.players[self.result_dict['winner']].my_turn = True
-        self.result_dict['total_chips'] = self.prev_total_chips + sum(self.current_chips.values())
-        self.result_dict['pnl'] = {username: -self.cummulative_chips[username] - self.current_chips[username] for username in self.player_usernames}
-        self.result_dict['pnl'][self.result_dict['winner']] += self.result_dict['total_chips']
+        
+        sorted_handcards = sorted(self.result_dict['best_hand'], key=lambda x: self.result_dict['best_hand'][x], reverse=True)
+        if self.result_dict['best_hand'][sorted_handcards[0]] != self.result_dict['best_hand'][sorted_handcards[1]]:
+            self.result_dict['winner'] = sorted_handcards[0]
+            self.players[self.result_dict['winner']].my_turn = True
+            self.result_dict['total_chips'] = self.prev_total_chips + sum(self.current_chips.values())
+            self.result_dict['pnl'] = {username: -self.cummulative_chips[username] - self.current_chips[username] for username in self.player_usernames}
+            self.result_dict['pnl'][self.result_dict['winner']] += self.result_dict['total_chips']
 
-        self.players[self.result_dict['winner']].change_chips(self.result_dict['total_chips'])
+            self.players[self.result_dict['winner']].change_chips(self.result_dict['total_chips'])
+        else:
+            pass
         # reset
         self.ready_num = 0
         self.current_chips = {username: 0 for username in self.player_usernames}

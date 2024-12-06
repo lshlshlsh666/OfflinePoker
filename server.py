@@ -1,6 +1,7 @@
-from flask import Flask, send_from_directory, request
+from flask import Flask, send_from_directory, request, render_template
 from flask_socketio import SocketIO, emit
 import uuid
+import json
 
 from py.game import Game
 
@@ -38,7 +39,12 @@ def handle_connect():
 
 @app.route('/')
 def serve_index():
-    return send_from_directory('.', 'index.html')
+    ip_config = json.load(open('ip.json', 'r'))
+    return render_template('./index.html', ip=ip_config['ip'], port=ip_config['port'])  # 将 IP 和端口传递给前端模板
+
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('.', path)
 
 @app.route('/css/<path:path>')
 def serve_css(path):
@@ -241,4 +247,5 @@ def on_initialize_round():
     emit('')
 
 if __name__ == '__main__':
-    socketio.run(app, host='192.168.1.154', port=8080)
+    ip_config = json.load(open('ip.json', 'r'))
+    socketio.run(app, host=ip_config['ip'], port=ip_config['port'])
