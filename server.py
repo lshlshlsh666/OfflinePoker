@@ -1,20 +1,19 @@
-from flask import Flask, send_from_directory, request, render_template
+from flask import Flask, send_from_directory, request
 from flask_socketio import SocketIO, emit
+
 import uuid
 import json
 
 from py.game import Game
 
 app = Flask(__name__, static_folder='.')
-app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 initial_sid_map = {}
-sessions = {'test': None}
+sessions = {}
 
 # Global variables
 GAME = Game()
 IS_START = False
-
 
 def generate_sid():
     return str(uuid.uuid4())
@@ -23,7 +22,6 @@ def generate_sid():
 def handle_connect():
     mysid = request.args.get("mysid")
     if mysid and mysid in sessions:
-        print(f"Restoring session for SID: {mysid}")
         sessions[mysid]['socket_id'] = request.sid
         if 'player' in sessions[mysid]['data']:
             socketio.emit('session_restored', {'player': sessions[mysid]['data']['player'].to_dict()}, room=request.sid)
@@ -31,16 +29,14 @@ def handle_connect():
             socketio.emit('session_restored', {'player': None}, room=request.sid)
     else:
         mysid = generate_sid()
-        print(f"Creating new session with SID: {mysid}")
-        sessions[mysid] = {'socket_id': request.sid, 'data': {}}
+        sessions[mysid] = {'socket_id': request.sid, 'data': {}, 'reset_all_player': False}
         socketio.emit('new_sid', {'mysid': mysid}, room=request.sid)
         initial_sid_map[request.sid] = mysid
 
 
 @app.route('/')
 def serve_index():
-    ip_config = json.load(open('ip.json', 'r'))
-    return render_template('./index.html', ip=ip_config['ip'], port=ip_config['port'])  # 将 IP 和端口传递给前端模板
+    return send_from_directory('.', 'index.html')
 
 @app.route('/<path:path>')
 def serve_static(path):
@@ -58,7 +54,17 @@ def serve_js(path):
 @socketio.on('join')
 def on_join(data):
     username, chips, alone = data['username'], data['chips'], data['alone']
+    if not alone and chips > GAME.config.MAX_INITIAL_CHIPS:
+        emit('GreedySB', {'penalty': GAME.config.GREEDY_PENALTY}, to=request.sid)
+        chips = GAME.config.GREEDY_PENALTY
     mysid = request.args.get('mysid')
+
+    # for those rejoined players
+    if GAME.registered_sid.get(mysid, None) in GAME.dead_players:
+        GAME.dead_players.remove(GAME.registered_sid[mysid])
+        GAME.registered_sid.pop(mysid)
+        sessions[mysid]['reset_all_player'] = False
+
     if mysid not in GAME.registered_sid:
         try:
             players = GAME.add_player(username, chips, mysid)
@@ -72,7 +78,7 @@ def on_join(data):
         try:
             emit('UpdateRoundInfo', {
                 'current_max_chip': GAME.current_max_chip,
-                'big_blind_username': GAME.player_usernames[GAME.sb_index_this_round + 1],
+                'big_blind_username': GAME.player_usernames[GAME.sb_index + 1],
                 'big_blind_required': GAME.config.BIG_BLIND
             }, to=request.sid)
         except:
@@ -102,13 +108,33 @@ def on_join(data):
 @socketio.on('ready')
 def on_ready(data):
     username = data['username']
-    is_start, player = GAME.player_get_ready(username)
+    if username in GAME.dead_players:
+        player = GAME.players.pop(username)
+        mysid = player.session_id
+        sessions[mysid]['data'].pop('player')
+        emit('reset_html', to=request.sid)
+        emit('session_restored', {'player': None}, to=request.sid)
+        return
     
-    emit('UpdatePlayerInfo', {
-        username: player.to_dict()
-        },broadcast=True)
+    is_start, player = GAME.player_get_ready(username)
+
+    if sessions[player.session_id]['reset_all_player']:
+        emit('RemovePlayer', {
+        'dead_players': GAME.dead_players
+        }, to=request.sid)
+        emit('UpdatePlayerInfo', {
+            username: player.to_dict() for username, player in GAME.players.items()
+            },to=request.sid)
+        emit('flash', to=request.sid)
+        sessions[player.session_id]['reset_all_player'] = False
+    else:
+        emit('UpdatePlayerInfo', {
+            username: player.to_dict()
+            },broadcast=True)
     
     if is_start:
+        for player in GAME.players.values():
+            player.reset()
         global IS_START
         IS_START = True
         small_blind_username, big_blind_username, next_player = GAME.start_new_game()
@@ -136,6 +162,7 @@ def on_ready(data):
         emit('RemovePnl', {
             'username': GAME.player_usernames
         }, broadcast=True)
+        emit('flash', broadcast=True)
         
 @socketio.on('GetPlayerUsernames')
 def on_get_player_usernames():
@@ -189,23 +216,36 @@ def on_bet(data):
     try:
         now_player, next_player = GAME.bet(username, int(chips))
     except ValueError as e:
-        min_bet, max_bet = e.args[1:]
-        emit('WrongbetChipsError',
-                {'min_bet': min_bet, 'max_bet': max_bet},
-              to=request.sid)
-        return
-    # bet wouldn't cause the end of the round
-    emit('UpdateRoundInfo', {
-        'current_max_chip': GAME.current_max_chip,
-    }, broadcast=True)
-    emit('UpdatePlayerInfo', {
-        now_player: GAME.players[now_player].to_dict(),
-        next_player: GAME.players[next_player].to_dict(),
-    }, broadcast=True)
-    emit('UpdateBetChips', {
-        now_player: GAME.current_chips[now_player],
-        next_player: GAME.current_chips[next_player]
-    }, broadcast=True)
+        if e.args[0] == 'Wrong chips':
+            min_bet, max_bet = e.args[1:]
+            emit('WrongbetChipsError',
+                    {'min_bet': min_bet, 'max_bet': max_bet},
+                to=request.sid)
+            return
+        elif e.args[0] == 'you must all in':
+            emit('InsufficientChipsForAllin', to=request.sid)
+            return
+    
+    if next_player:
+        emit('UpdateRoundInfo', {
+            'current_max_chip': GAME.current_max_chip,
+        }, broadcast=True)
+        emit('UpdatePlayerInfo', {
+            now_player: GAME.players[now_player].to_dict(),
+            next_player: GAME.players[next_player].to_dict(),
+        }, broadcast=True)
+        emit('UpdateBetChips', {
+            now_player: GAME.current_chips[now_player],
+            next_player: GAME.current_chips[next_player]
+        }, broadcast=True)
+    else:
+        if GAME.status == 'End':
+            emit("RoundEnd", GAME.get_result(), broadcast=True)
+            emit('UpdatePlayerInfo', {username: player.to_dict() for username, player in GAME.players.items()}, broadcast=True)
+            emit('UpdateBetChips', {username: 0 for username in GAME.players}, broadcast=True)
+            emit("UpdateCenterZone", {'community_cards': GAME.community.cards, 'this_round_total_chips': 0, 'prev_total_chips': GAME.prev_total_chips}, broadcast=True)
+        else:
+            new_round()
 
 
 @socketio.on('fold')
@@ -236,16 +276,28 @@ def dealcards():
 
 @socketio.on('initializeRound')
 def on_initialize_round():
-    for player in GAME.players.values():
-        player.reset()
-        global IS_START
-        IS_START = False
+    if GAME.status != 'End':
+        return
+
+    global IS_START
+    IS_START = False
+
     GAME.status = 'PreFlop'
-    emit('UpdatePlayerInfo', {
-        username: player.to_dict() for username, player in GAME.players.items()
-    }, broadcast=True)
-    emit('')
+    for mysid in sessions:
+        sessions[mysid]['reset_all_player'] = True
+
+    GAME.check_dead_player()
+
+
+@socketio.on('exit')
+def on_exit(data):
+    player = GAME.players[data['username']]
+    player.status = 'fold'
+    GAME.dead_players.append(data['username'])
+
+    if player.my_turn:
+        on_fold(data)
+    
 
 if __name__ == '__main__':
-    ip_config = json.load(open('ip.json', 'r'))
-    socketio.run(app, host=ip_config['ip'], port=ip_config['port'])
+    socketio.run(app, host='0.0.0.0', port=80)

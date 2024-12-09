@@ -3,30 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';"> -->
     <title>德州扑克桌面</title>
+    <link rel="stylesheet" href="css/playing-cards.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/table.css">
     <link rel="stylesheet" href="css/player_container.css">
-    <link rel="stylesheet" href="css/playing-cards.css">
     <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/optimized_login.css">
+    <link rel="stylesheet" href="css/optimized_table.css">
+    <link rel="stylesheet" href="css/optimized_player_container.css">
+    <link rel="stylesheet" href="css/optimized_ui.css">
     <script src="js/socket.js"></script>
 </head>
 <body>
     <script>
-        console.log("ip: {{ ip }}$");
         username = '';
         const mysid = localStorage.getItem('mysid');
         let socket;
 
         if (mysid) {
             console.log('mysid:', mysid);
-            socket = io("http://{{ ip }}:{{ port }}", {
+            socket = io({
+                transports: ['websocket', 'polling'],
                 query: { 
                     "mysid": mysid
                 }
             });
         } else {
-            socket = io("http://{{ ip }}:{{ port }}");
+            socket = io( {
+                transports: ['websocket', 'polling'],
+            });
         }
 
         socket.on('new_sid', (data) => {
@@ -36,7 +43,8 @@
             // flash
             socket.disconnect();
             location.reload();
-            socket = io("http://{{ ip }}:{{ port }}", {
+            socket = io({
+                transports: ['websocket', 'polling'],
                 query: { 
                     "mysid": mysid
                 }
@@ -50,8 +58,20 @@
                 console.log(`恢复会话成功，用户名：${username}`);
                 socket.emit("join", { username: username, chips: player.chips, alone: true });
             } else {
+                console.log('恢复会话失败');
                 document.dispatchEvent(new CustomEvent('NewUserLogin'));
             }
+        });
+
+        socket.on('flash', () => {
+            console.log('flash');
+            location.reload();
+        });
+
+        socket.on('reset_html', () => {
+            console.log('reset_html');
+            document.body.innerHTML = '';
+            location.reload();
         });
     </script>
 

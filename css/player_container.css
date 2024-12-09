@@ -1,11 +1,11 @@
 .container {
   position: absolute;
   width: 10%; /* 相对宽度，控制整体大小 */
-  max-width: 220px; /* 最大宽度限制 */
+  /* max-width: 220px; 最大宽度限制 */
   aspect-ratio: 1 / 1; /* 使容器为正方形 */
   text-align: center;
-  border-radius: 10px; /* 圆角使容器更柔和 */
-  padding: 10px; /* 添加一些内边距使整体布局更舒适 */
+  border-radius: 5%; /* 圆角使容器更柔和 */
+  padding: 1%; /* 添加一些内边距使整体布局更舒适 */
   transition: all 0.3s ease; /* 增加整体过渡效果 */
   transform: translate(-50%, -50%);
   display: flex;
@@ -21,7 +21,7 @@
 /* 圆形样式 */
 .circle {
   transform: scale(0.9);
-  width: 100%; /* 圆形宽度占容器100% */
+  width: 80%; /* 圆形宽度占容器100% */
   aspect-ratio: 1 / 1; /* 确保为正圆 */
   background: radial-gradient(circle, #b8860b, #000); /* 黑金色渐变背景颜色 */
   color: #fff; /* 文本颜色 */
@@ -29,12 +29,11 @@
   display: flex; /* 居中对齐 */
   align-items: center; /* 垂直居中 */
   justify-content: center; /* 水平居中 */
-  font-size: 1em; /* 增加字体大小以改善视觉效果 */
+  font-size: 0.5em; /* 增加字体大小以改善视觉效果 */
   font-weight: bold; /* 字体加粗使文本更醒目 */
-  position: relative; /* 相对定位 */
+  position: absolute; /* 相对定位 */
   z-index: 0; /* 确保圆形在长方形的后面 */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* 添加阴影使圆形更具立体感 */
-  transition: background 0.3s ease, color 0.3s ease; /* 过渡效果 */
   overflow: hidden; /* 隐藏超出部分 */
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s cubic-bezier(0.25, 1, 0.5, 1), background 0.5s ease, color 0.5s ease; /* 更平滑的过渡效果 */
   /* clip-path: polygon(0% 0%, 100% 0%, 100% 87%, 0% 87%); 删除被长方形覆盖的部分 */
@@ -58,11 +57,13 @@
   display: flex; /* 居中对齐 */
   align-items: center; /* 垂直居中 */
   justify-content: center; /* 水平居中 */
-  font-size: 1em; /* 字体相对调整，更加突出 */
+  font-size: 5%; /* 字体相对调整，更加突出 */
   bottom: -5%; /* 覆盖住圆形底部，往下延伸一些 */
   left: 0; /* 左对齐 */
-  border-bottom-left-radius: 10%; /* 长方形左下角圆角 */
-  border-bottom-right-radius: 10%; /* 长方形右下角圆角 */
+  border-top-left-radius: 20%; /* 长方形左上角圆角 */
+  border-top-right-radius: 20%; /* 长方形右上角圆角 */
+  border-bottom-left-radius: 20%; /* 长方形左下角圆角 */
+  border-bottom-right-radius: 20%; /* 长方形右下角圆角 */
   z-index: 1; /* 确保长方形在圆形的前面 */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* 添加阴影使长方形更具立体感 */
   transition: background 0.3s ease, color 0.3s ease; /* 过渡效果 */
@@ -130,13 +131,13 @@
   width: 3%; /* 圆形的宽度 */
   aspect-ratio: 1 / 1; /* 使元素为正方形 */
   background-color: #f0c419; /* 背景色可以根据需要调整 */
-  color: #fff; /* 字体颜色 */
-  font-size: 12px; /* 数字大小 */
+  color: #000000; /* 字体颜色 */
+  font-size: 0.3em; /* 数字大小 */
   font-weight: bold; /* 数字加粗 */
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
-  border-radius: 50%; /* 使元素成为圆形 */
-  border: 2px solid #e67e22; /* 外圈边框 */
+  border-radius: 30%; /* 使元素成为圆形 */
+  border: 1.5px solid #e67e22; /* 外圈边框 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
   transform: translate(-50%, -50%);
   display: flex;
@@ -144,8 +145,8 @@
 
 .reveal_card_container {
   position: absolute;
-  width: 10%;
-  height: 15%;
+  width: 14%;
+  aspect-ratio: 2230 / 1539;
   transform: translate(-50%, -50%);
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
@@ -158,8 +159,9 @@
   width: 10%;
   height: 5%;
   transform: translate(-50%, -50%);
-  font-size: 25px;
+  font-size: 20px;
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
+  font-weight: bold; /* 数字加粗 */
   display: flex;
 }

@@ -1,6 +1,7 @@
 let current_max_chip = 20;
 let big_blind_username;
 let big_blind_required;
+let my_max_chip;
 
 socket.on("UpdateRoundInfo", (data) => {
     current_max_chip = data.current_max_chip;
@@ -12,6 +13,18 @@ socket.on("UpdateRoundInfo", (data) => {
 });
 
 document.addEventListener('InitializeGame', () => {
+    const exit_button = document.createElement('button');
+    exit_button.id = 'exit-button';
+    exit_button.textContent = 'X';
+    exit_button.classList.add('exit-button');
+    console.log('exit_button', exit_button);
+    exit_button.addEventListener('click', () => {
+        if (confirm('Are you sure you want to leave the game?')) {
+            socket.emit('exit', {username: window.username});
+        }
+    });
+    document.body.appendChild(exit_button);
+
     const handcards = document.createElement('div');
     handcards.id = 'handcards';
     handcards.className = 'handcards';
@@ -19,6 +32,7 @@ document.addEventListener('InitializeGame', () => {
     for (let i = 0; i < 2; i++) {
         const card_slot = document.createElement('div');
         card_slot.id = `handcard-slot-${i}`;
+        card_slot.className = 'pcard-none';
         handcards.appendChild(card_slot);
     }
 
@@ -55,13 +69,23 @@ document.addEventListener('InitializeGame', () => {
     };
 
     const betInput = document.createElement('input');
-    betInput.type = 'number';
-    betInput.min = 10;
+    betInput.type = 'range'; // 设置 input 类型为 range
+    betInput.min = 20;
     betInput.max = 100000;
-    betInput.step = 10;
-    betInput.value = 10;
-    betInput.classList.add('bet-input');
+    betInput.step = 20;
+    betInput.value = 20;
+    betInput.className = 'bet-input';
     betInput.id = 'bet-input';
+
+    const betInputText = document.createElement('div');
+    betInputText.textContent = '20';
+    betInputText.className = 'bet-input-text';
+    betInputText.id = 'bet-input-text';
+
+    betInput.addEventListener('input', function () {
+        updateBetValue(this.value); // 调用 updateBetValue 函数
+    });
+
 
     const button2 = document.createElement('button');
     button2.id = 'bet-button';
@@ -90,6 +114,7 @@ document.addEventListener('InitializeGame', () => {
     
     // Append buttons to the container
     buttonContainer.appendChild(button1);
+    buttonContainer.appendChild(betInputText);
     buttonContainer.appendChild(betInput);
     buttonContainer.appendChild(button2);
     buttonContainer.appendChild(button3);
@@ -104,6 +129,14 @@ socket.on("GameStarted", () => {
     document.querySelector('.op-button-container').style.display = 'flex';
 });
 
+function updateBetValue(value) {
+    document.getElementById("bet-input-text").textContent = value;
+    if (value == my_max_chip) {
+        document.getElementById('bet-button').innerText = 'All in';
+    } else {
+        document.getElementById('bet-button').innerText = 'Bet';
+    }
+}
 
 socket.on('UpdateUI', (data) => {
     console.log('UpdateUI', data);
@@ -144,6 +177,7 @@ socket.on('UpdatePlayerInfo', (data) => {
         const buttonContainer = document.getElementById('op-button-container');
         const me = data[window.username];
         if (me && buttonContainer && (data.is_playing === undefined || data.is_playing)) {
+            my_max_chip = me.chips + me.current_bet;
             if (me.my_turn) {
                 buttonContainer.classList.remove('disabled');
             } else {
@@ -151,7 +185,7 @@ socket.on('UpdatePlayerInfo', (data) => {
             }
 
             const call_button = document.getElementById('call-button');
-            if (me.chips <= current_max_chip) {
+            if (my_max_chip <= current_max_chip) {
                 call_button.innerText = 'All in';
             } else if (me.username === big_blind_username && current_max_chip === big_blind_required && document.getElementById('card-slot-0').className == 'pcard-none') {
                 call_button.innerText = 'Check';
@@ -165,7 +199,16 @@ socket.on('UpdatePlayerInfo', (data) => {
             const next_available_bet = current_max_chip === 0 ? 20 : current_max_chip * 2;
             bet_input.min = next_available_bet;
             bet_input.value = next_available_bet;
-            bet_input.max = me.chips;
+            bet_input.max = my_max_chip;
+
+            if (next_available_bet >= my_max_chip) {
+                bet_input.disabled = true;
+                bet_input.min = my_max_chip;
+                document.getElementById('bet-button').innerText = 'All in';
+            } else {
+                bet_input.disabled = false;
+                document.getElementById('bet-button').innerText = 'Bet';
+            }
         }
     });
 });

@@ -5,8 +5,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
+    width: 95vw; /* 设置宽度为视口宽度 */
+    height: 95vh; /* 设置高度为视口高度 */
+    overflow: hidden; /* 隐藏溢出内容 */
 }
 
 .table {
@@ -16,14 +17,16 @@ body {
     background: radial-gradient(circle, #016936, #014d24);
     position: relative;
     margin: 0 auto;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    border: 5px solid #f1c40f;
+    box-shadow: 0 0 20% rgba(0, 0, 0, 0.5);
+    border: 2px solid #f1c40f;
+    
+    box-shadow: 0 0 20% rgba(0, 0, 0, 0.5);
 }
 
 .center-container {
-    position: absolute;
-    width: 50%;
-    height: 30%;
+    position: relative;
+    width: 60%;
+    aspect-ratio: 1115 / 324;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -34,19 +37,20 @@ body {
 .public-cards {
     position: relative;
     width: 100%;
-    height: 70%;
+    height: 80%;
     /* transform: translate(-50%, -50%); */
     display: flex;
-    gap: 15px;
+    gap: 5%;
     justify-content: center; /* 水平居中 */
+    /* align-items:center */
 }
 
 /* total-chips 样式 */
 .total-chips {
     position: relative;      /* 相对定位 */
     display: flex;
-    margin-top: 10px;         /* 与上方内容的间距 */
-    font-size: 16px;          /* 字体大小 */
+    margin-top: 3%;         /* 与上方内容的间距 */
+    font-size: 0.5em;          /* 字体大小 */
     font-weight: bold;        /* 字体加粗 */
     justify-content: center; /* 水平居中 */
     text-align: center;       /* 文本居中对齐 */

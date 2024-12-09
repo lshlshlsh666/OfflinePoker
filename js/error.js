@@ -12,3 +12,8 @@ socket.on('WrongbetChipsError', (data) => {
     const max_bet = data.max_bet;
     alert(`Please enter a number between ${min_bet} and ${max_bet}!`);
 });
+
+socket.on('GreedySB', (data) => {
+    const penalty = data.penalty;
+    alert(`Greedy people never end well! Your starting amount is set to ${penalty}!`);
+});

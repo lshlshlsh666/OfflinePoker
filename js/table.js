@@ -66,33 +66,35 @@ async function PositionPlayers() {
         const player_container = document.getElementById('player_container_' + player_username);
         player_container.style.display = 'flex';
 
-        const angle = (i / numPlayers) * 2 * Math.PI;
-        const x = centerX + centerX * Math.cos(angle);
-        const y = centerY + centerY * Math.sin(angle);
+        const angle = (i / numPlayers + 1/4) * 2 * Math.PI;
+        const x = centerX + centerX * 1.1 * Math.cos(angle);
+        const y = centerY + centerY * 1.1 * Math.sin(angle);
         
         player_container.style.left = `${x}px`;
         player_container.style.top = `${y}px`;
 
         const chip_container = document.getElementById('chip_container_' + player_username);
         
-        const x2 = centerX + centerX * 5/6 * Math.cos(angle);
-        const y2 = centerY + centerY * 5/6 * Math.sin(angle);
+        const x2 = centerX + centerX * 4/5 * Math.cos(angle);
+        const y2 = centerY + centerY * 4/5 * Math.sin(angle);
         
         chip_container.style.left = `${x2}px`;
         chip_container.style.top = `${y2}px`;
 
         const reveal_card_container = document.getElementById('reveal_card_container_' + player_username);
 
-        const x3 = centerX + centerX * 2/3 * Math.cos(angle);
-        const y3 = centerY + centerY * 2/3 * Math.sin(angle);
+        const angle3 = (i / numPlayers + 18/64) * 2 * Math.PI;
+        const x3 = centerX + centerX * 1.2 * Math.cos(angle3);
+        const y3 = centerY + centerY * 1.2 * Math.sin(angle3);
 
         reveal_card_container.style.left = `${x3}px`;
         reveal_card_container.style.top = `${y3}px`;
 
         const pnl = document.getElementById('pnl_' + player_username);
-
-        const x4 = centerX + centerX * 7/6 * Math.cos(angle);
-        const y4 = centerY + centerY * 7/6 * Math.sin(angle);
+        
+        const angle4 = (i / numPlayers + 15/64) * 2 * Math.PI;
+        const x4 = centerX + centerX * 7/6 * Math.cos(angle4);
+        const y4 = centerY + centerY * 7/6 * Math.sin(angle4);
 
         pnl.style.left = `${x4}px`;
         pnl.style.top = `${y4}px`;
@@ -157,22 +159,28 @@ socket.on('RoundEnd', (data) => {
     const reveal_waived = data.reveal_waived;
     if (!reveal_waived) {
         const handcards = data.handcards;
+        const winners  = data.winners;
         for (let username in handcards) {
             const this_handcards = handcards[username];
             document.getElementById(`reveal_card1_${username}`).className = window.int_to_card(this_handcards[0]);
             document.getElementById(`reveal_card2_${username}`).className = window.int_to_card(this_handcards[1]);
-            document.getElementById(`reveal_card_container_${username}`).style.display = 'flex';
+            const reveal_card_container = document.getElementById(`reveal_card_container_${username}`);
+            reveal_card_container.style.display = 'flex';
+            if (!winners.includes(username)) {
+                reveal_card_container.style.opacity = '0.3';
+            }
         }
     }
 
     for (let username in data.pnl) {
         const pnl_text = document.getElementById(`pnl_${username}`);
         const pnl = data.pnl[username];
-        pnl_text.innerText = pnl;
         pnl_text.style.display = 'flex';
         if (pnl > 0) {
+            pnl_text.innerText = `+${pnl}`;
             pnl_text.style.color = 'green';
         } else if (pnl < 0) {
+            pnl_text.innerText = pnl
             pnl_text.style.color = 'red';
         } else {
             pnl_text.style.display = 'none';

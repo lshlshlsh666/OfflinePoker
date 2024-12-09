@@ -95,50 +95,50 @@ class HandCard:
             if self.is_straight(flush_cards):
                 # 是否为同花顺（皇家同花顺或同花顺）
                 if flush_cards[:5] == [14, 13, 12, 11, 10]:
-                    return (10, flush_cards[:5])  # 皇家同花顺
-                return (9, flush_cards[:5])  # 同花顺
+                    return (10, tuple(flush_cards[:5]))  # 皇家同花顺
+                return (9, tuple(flush_cards[:5]))  # 同花顺
         
         # 是否为四条
         four_of_a_kind = next((rank for rank, count in rank_counts.items() if count == 4), None)
         if four_of_a_kind:
             remaining = sorted([rank for rank in ranks if rank != four_of_a_kind], reverse=True)
-            return (8, [four_of_a_kind] * 4 + [remaining[0]])
+            return (8, tuple([four_of_a_kind] * 4 + [remaining[0]]))
         
         # 是否为葫芦
         three_of_a_kind = next((rank for rank, count in rank_counts.items() if count == 3), None)
         pair = next((rank for rank, count in rank_counts.items() if count == 2 and rank != three_of_a_kind), None)
         if three_of_a_kind and pair:
-            return (7, [three_of_a_kind] * 3 + [pair] * 2)
+            return (7, tuple([three_of_a_kind] * 3 + [pair] * 2))
         
         # 是否为同花
         if flush_suit:
-            return (6, flush_cards[:5])
+            return (6, tuple(flush_cards[:5]))
         
         # 是否为顺子
         if self.is_straight(ranks):
             straight_cards = self.get_straight(ranks)
-            return (5, straight_cards)
+            return (5, tuple(straight_cards))
         
         # 是否为三条
         if three_of_a_kind:
             remaining = sorted([rank for rank in ranks if rank != three_of_a_kind], reverse=True)
-            return (4, [three_of_a_kind] * 3 + remaining[:2])
+            return (4, tuple([three_of_a_kind] * 3 + remaining[:2]))
         
         # 是否为两对
         pairs = [rank for rank, count in rank_counts.items() if count == 2]
         if len(pairs) >= 2:
             top_two = sorted(pairs, reverse=True)[:2]
             remaining = sorted([rank for rank in ranks if rank not in top_two], reverse=True)
-            return (3, top_two * 2 + [remaining[0]])
+            return (3, tuple(top_two * 2 + [remaining[0]]))
         
         # 是否为一对
         if len(pairs) == 1:
             pair = pairs[0]
             remaining = sorted([rank for rank in ranks if rank != pair], reverse=True)
-            return (2, [pair] * 2 + remaining[:3])
+            return (2, tuple([pair] * 2 + remaining[:3]))
         
         # 高牌
-        return (1, sorted(ranks, reverse=True)[:5])
+        return (1, tuple(sorted(ranks, reverse=True)[:5]))
 
     def is_straight(self, ranks):
         unique_ranks = sorted(set(ranks), reverse=True)
@@ -156,5 +156,5 @@ class HandCard:
             if unique_ranks[i] - unique_ranks[i + 4] == 4:
                 return unique_ranks[i:i + 5]
         if set([14, 5, 4, 3, 2]).issubset(set(ranks)):
-            return [5, 4, 3, 2, 14]
-        return []
+            return (5, 4, 3, 2, 14)
+        return ()

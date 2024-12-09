@@ -1,10 +1,25 @@
+.exit-button {
+    position: absolute;
+    top: 3%;
+    right: 3%;
+    width: 3%;
+    aspect-ratio: 1;
+    cursor: pointer;
+    background: linear-gradient(135deg, #cd2406, #FF4500);
+    opacity: 0.3;
+}
+
+.exit-button:hover {
+    opacity: 1;
+}
+
 .handcards {
     position: absolute;
-    width: 10%;
-    height: 15%;
-    bottom: 10%;
-    left: 15%;
-    transform: translateX(-50%);
+    width: 15%;
+    aspect-ratio: 2230 / 1539;
+    bottom: 3%;
+    left: 3%;
+    /* transform: translateX(-50%); */
     display: flex;
     gap: 5%;
 }
@@ -15,7 +30,7 @@
     height: 6%;
     position: absolute;
     top: 90%;
-    left: 50%;
+    left: 80%;
     transform: translate(-50%, -50%);
     padding: 1vw 2vw; /* 增加按钮的内边距，使其更大 */
     font-size: 1.5vw; /* 增大字体 */
@@ -27,6 +42,9 @@
     cursor: pointer; /* 鼠标指针变成手形 */
     box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
     transition: all 0.3s ease; /* 平滑的动画效果 */
+    display: flex; /* 启用 flex 布局 */
+    align-items: center; /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
 }
 
 .ready-button:hover {
@@ -52,12 +70,12 @@
 .op-button-container {
     position: absolute;
     width: 25%;
-    height: 3%;
-    right: 5%;
-    bottom: 5%;
+    height: 5%;
+    right: 3%;
+    bottom: 3%;
     display: flex;
-    gap: 1%;
-    padding: 1.5%;
+    gap: 2%;
+    padding: 10px;
     background: rgba(0, 0, 0, 0.7); /* Slightly darker for better contrast */
     border-radius: 1vw;
     box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.4);
@@ -72,9 +90,9 @@
     font-size: 1%;
     font-weight: bold;
     text-align: center;
-    background: linear-gradient(135deg, #FF6347, #FF4500);
+    background: linear-gradient(135deg, #c38074, #FF4500);  
     color: #fff;
-    border: 0.3vw solid #FFD700;
+    border: 2px solid #FFD700;
     border-radius: 0.3vw;
     cursor: pointer;
     box-shadow: 0 0.8vw 1.5vw rgba(0, 0, 0, 0.4);
@@ -84,7 +102,6 @@
 }
 
 .op-button:hover {
-    background: linear-gradient(135deg, #FF4500, #FF6347);
     transform: translateY(-0.5vw);
     box-shadow: 0 1vw 2vw rgba(0, 0, 0, 0.5);
 }
@@ -104,7 +121,7 @@
 }
 
 /* Input box style for 'Bet' */
-.bet-input {
+/* .bet-input {
     width: 40%;
     padding: 0.5vw;
     font-size: 1%;
@@ -114,13 +131,42 @@
     background: #fff;
     box-shadow: 0 0.4vw 0.8vw rgba(0, 0, 0, 0.2);
     transition: border 0.3s ease, box-shadow 0.3s ease;
-    justify-content: center; /* 水平居中 */
-    align-items: center; /* 垂直居中 */
-    /* transform: translateY(-0.5vw); */
+    justify-content: center;
+    align-items: center; 
 }
 
 .bet-input:focus {
     outline: none;
     border-color: #FF4500;
     box-shadow: 0 0.8vw 1.5vw rgba(255, 69, 0, 0.5);
+} */
+
+.bet-input {
+    width: 40%;
+    padding: 0.5vw;
+    font-size: 1%;
+    color: #333;
+    border: 0.3vw solid #FFD700;
+    border-radius: 0.5vw;
+    background: #fff;
+    /* box-shadow: 0 0.4vw 0.8vw rgba(0, 0, 0, 0.2); */
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    justify-content: center;
+    align-items: center; 
+}
+
+.bet-input:focus {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+.bet-input-text {
+    position: absolute;
+    top: 20%;
+    left: 41%;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fffdfc;
+    transform: translate(-50%, -50%);
+    display: flex;
 }

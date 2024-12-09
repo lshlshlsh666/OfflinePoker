@@ -11,6 +11,7 @@ class Player:
     status: Literal['unready', 'ready', 'fold', 'allin']
     my_turn: bool
     role: Literal['small_blind', 'big_blind', 'dealer', 'player']
+    current_bet: int
     session_id: int
     
     def to_dict(self):
@@ -20,7 +21,8 @@ class Player:
             'handcards': self.handcards.cards,
             'status': self.status,
             'my_turn': self.my_turn,
-            'role': self.role
+            'role': self.role,
+            'current_bet': self.current_bet,
         }
         
     def get_handcards(self):
@@ -47,3 +49,4 @@ class Player:
         self.status = 'unready'
         self.my_turn = False
         self.role = 'player'
+        self.current_bet = 0

@@ -31,6 +31,14 @@ function UpdatePlayerInfo(player) {
         circle.classList.add('circle');
         circle.textContent = player.username;
 
+        if (!(player.username === window.username)) {
+            circle.addEventListener('click', () => {
+                if (confirm("Are you sure you want to kick this player?")) {
+                    socket.emit('exit', {username: player.username});
+                }
+            });
+        }
+        
         const rectangle = document.createElement('div');
         rectangle.id = 'player_chips_' + player.username;
         rectangle.classList.add('rectangle');
@@ -120,16 +128,15 @@ socket.on('RemovePnl', (data) => {
     }
 });
 
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.removedNodes.length > 0) {
-            mutation.removedNodes.forEach((node) => {
-                if (node.id === 'role_letter_a') {
-                    console.warn('role_letter_a was removed');
-                }
-            });
-        }
-    });
+socket.on('RemovePlayer', (data) => {
+    for (let username of data.dead_players) {
+        const player_container = document.getElementById(`player_container_${username}`);
+        player_container.style.display = 'none';
+        const chip_container = document.getElementById(`chip_container_${username}`);
+        chip_container.style.display = 'none';
+        const reveal_card_container = document.getElementById(`reveal_card_container_${username}`);
+        reveal_card_container.style.display = 'none';
+        const pnl_text = document.getElementById(`pnl_${username}`);
+        pnl_text.style.display = 'none';
+    }
 });
-
-observer.observe(document.body, { childList: true, subtree: true });
